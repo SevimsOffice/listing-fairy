@@ -69,6 +69,20 @@ export const Route = createFileRoute("/api/etsy/callback")({
           return respond("State mismatch. Please try again.", false, 400);
         }
 
+        // Validate state timestamp (max 5 minutes old, no time-travel)
+        const stateTimestamp = parseInt(state.split("-").pop() || "0", 10);
+        const stateAge = Date.now() - stateTimestamp;
+        if (!stateTimestamp || stateAge > 5 * 60 * 1000) {
+          return respond(
+            "OAuth session expired. Please try again from the Setup page.",
+            false,
+            400,
+          );
+        }
+        if (stateAge < 0) {
+          return respond("Invalid OAuth state.", false, 400);
+        }
+
         try {
           const redirectUri = `${url.origin}/api/etsy/callback`;
           const tokens = await exchangeEtsyCode({ code, verifier, redirectUri });
