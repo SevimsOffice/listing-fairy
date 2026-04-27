@@ -27,6 +27,8 @@ import {
   Link2,
   Sparkles,
   ArrowRight,
+  Clock,
+  RefreshCw,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_app/setup")({
@@ -60,15 +62,27 @@ function SetupPage() {
   const [shippingProfile, setShippingProfile] = useState("free");
   const [category, setCategory] = useState(categories[0]);
 
-  const [etsyShopName, setEtsyShopName] = useState<string | null>(null);
+  const [etsyConnection, setEtsyConnection] = useState<{
+    shop_name: string | null;
+    updated_at: string;
+  } | null>(null);
   const [connecting, setConnecting] = useState(false);
+
+  const fetchEtsyConnection = async (userId: string) => {
+    const { data } = await supabase
+      .from("etsy_connections")
+      .select("shop_name, updated_at")
+      .eq("user_id", userId)
+      .maybeSingle();
+    setEtsyConnection(data ?? null);
+  };
 
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const [{ data: s }, { data: e }] = await Promise.all([
+      const [{ data: s }] = await Promise.all([
         supabase.from("settings").select("*").eq("user_id", user.id).maybeSingle(),
-        supabase.from("etsy_connections").select("shop_name").eq("user_id", user.id).maybeSingle(),
+        fetchEtsyConnection(user.id),
       ]);
       if (s) {
         setDefaultPrice(String(s.default_price));
@@ -76,7 +90,6 @@ function SetupPage() {
         setShippingProfile(s.shipping_profile);
         setCategory(s.category);
       }
-      if (e?.shop_name) setEtsyShopName(e.shop_name);
       setLoading(false);
     })();
   }, [user]);
@@ -106,18 +119,10 @@ function SetupPage() {
   const startOAuth = useServerFn(startEtsyOAuth);
   const disconnect = useServerFn(disconnectEtsy);
 
-  // Show toast if redirected back from callback (handled by callback page itself,
-  // but refresh shop name here)
+  // Refresh shop status when user returns from Etsy consent screen
   useEffect(() => {
     if (!user) return;
-    const onFocus = async () => {
-      const { data } = await supabase
-        .from("etsy_connections")
-        .select("shop_name")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      setEtsyShopName(data?.shop_name ?? null);
-    };
+    const onFocus = () => fetchEtsyConnection(user.id);
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
   }, [user]);
@@ -143,10 +148,25 @@ function SetupPage() {
     const res = await disconnect({});
     if (res.error) toast.error(res.error);
     else {
-      setEtsyShopName(null);
+      setEtsyConnection(null);
       toast.success("Etsy disconnected");
     }
   };
+
+  const isConnected = !!etsyConnection;
+  const shopName = etsyConnection?.shop_name ?? null;
+  const lastSync = etsyConnection?.updated_at
+    ? new Date(etsyConnection.updated_at)
+    : null;
+  const lastSyncLabel = lastSync
+    ? lastSync.toLocaleString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      })
+    : null;
 
   if (loading) {
     return (
@@ -171,47 +191,101 @@ function SetupPage() {
         </p>
       </header>
 
-      {/* Etsy connection */}
-      <Card className="p-6 shadow-sm">
-        <div className="flex items-start justify-between gap-4">
+      {/* Etsy connection status */}
+      <Card
+        className={`p-6 shadow-sm border-2 transition-colors ${
+          isConnected
+            ? "border-success/30 bg-success/[0.03]"
+            : "border-border"
+        }`}
+      >
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-5">
           <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[image:var(--gradient-primary)] shrink-0">
-              <Store className="h-6 w-6 text-primary-foreground" />
+            <div
+              className={`flex h-12 w-12 items-center justify-center rounded-xl shrink-0 ${
+                isConnected
+                  ? "bg-success/15"
+                  : "bg-[image:var(--gradient-primary)]"
+              }`}
+            >
+              <Store
+                className={`h-6 w-6 ${
+                  isConnected ? "text-success" : "text-primary-foreground"
+                }`}
+              />
             </div>
-            <div>
-              <h2 className="font-semibold">Etsy connection</h2>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                Authorize your Etsy shop to publish listings.
-              </p>
-              {etsyShopName ? (
-                <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-success/10 px-3 py-1 text-xs font-medium text-success">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  Connected to {etsyShopName}
-                </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="font-semibold">Etsy connection</h2>
+                {isConnected ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-success/15 px-2.5 py-0.5 text-xs font-semibold text-success">
+                    <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
+                    Connected
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-muted-foreground">
+                    <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60" />
+                    Not connected
+                  </span>
+                )}
+              </div>
+
+              {isConnected ? (
+                <dl className="mt-3 grid gap-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <dt className="text-muted-foreground inline-flex items-center gap-1.5">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                      Shop
+                    </dt>
+                    <dd className="font-medium truncate">
+                      {shopName ?? "Etsy account"}
+                    </dd>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <dt className="text-muted-foreground inline-flex items-center gap-1.5">
+                      <Clock className="h-3.5 w-3.5" />
+                      Last sync
+                    </dt>
+                    <dd className="font-medium">{lastSyncLabel}</dd>
+                  </div>
+                </dl>
               ) : (
-                <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
-                  <XCircle className="h-3.5 w-3.5" />
-                  Not connected
-                </div>
+                <p className="text-sm text-muted-foreground mt-2 max-w-md">
+                  Authorize your Etsy shop so we can publish listings on your
+                  behalf. Takes about 30 seconds.
+                </p>
               )}
             </div>
           </div>
-          <div className="flex flex-col gap-2 shrink-0">
-            <Button onClick={connectEtsy} disabled={connecting} variant="outline">
+
+          <div className="flex md:flex-col gap-2 shrink-0">
+            <Button
+              onClick={connectEtsy}
+              disabled={connecting}
+              variant={isConnected ? "outline" : "default"}
+              className={
+                !isConnected
+                  ? "bg-[image:var(--gradient-primary)] hover:opacity-90 shadow-[var(--shadow-elegant)]"
+                  : ""
+              }
+            >
               {connecting ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : isConnected ? (
+                <RefreshCw className="h-4 w-4 mr-2" />
               ) : (
                 <Link2 className="h-4 w-4 mr-2" />
               )}
-              {etsyShopName ? "Reconnect" : "Connect to Etsy"}
+              {isConnected ? "Reconnect" : "Connect to Etsy"}
             </Button>
-            {etsyShopName && (
+            {isConnected && (
               <Button
                 onClick={disconnectEtsyHandler}
                 variant="ghost"
                 size="sm"
                 className="text-muted-foreground"
               >
+                <XCircle className="h-3.5 w-3.5 mr-1.5" />
                 Disconnect
               </Button>
             )}
