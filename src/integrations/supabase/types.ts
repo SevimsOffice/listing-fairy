@@ -26,6 +26,7 @@ export type Database = {
           grade_level: string | null
           id: string
           image_data: string | null
+          image_url: string | null
           price: number | null
           prompt: string | null
           status: string
@@ -44,6 +45,7 @@ export type Database = {
           grade_level?: string | null
           id?: string
           image_data?: string | null
+          image_url?: string | null
           price?: number | null
           prompt?: string | null
           status?: string
@@ -62,6 +64,7 @@ export type Database = {
           grade_level?: string | null
           id?: string
           image_data?: string | null
+          image_url?: string | null
           price?: number | null
           prompt?: string | null
           status?: string
