@@ -16,6 +16,7 @@ import { Route as AppUploadRouteImport } from './routes/_app.upload'
 import { Route as AppSetupRouteImport } from './routes/_app.setup'
 import { Route as AppPublishRouteImport } from './routes/_app.publish'
 import { Route as AppGenerateRouteImport } from './routes/_app.generate'
+import { Route as ApiEtsyCallbackRouteImport } from './routes/api.etsy.callback'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -51,6 +52,11 @@ const AppGenerateRoute = AppGenerateRouteImport.update({
   path: '/generate',
   getParentRoute: () => AppRoute,
 } as any)
+const ApiEtsyCallbackRoute = ApiEtsyCallbackRouteImport.update({
+  id: '/api/etsy/callback',
+  path: '/api/etsy/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/publish': typeof AppPublishRoute
   '/setup': typeof AppSetupRoute
   '/upload': typeof AppUploadRoute
+  '/api/etsy/callback': typeof ApiEtsyCallbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/publish': typeof AppPublishRoute
   '/setup': typeof AppSetupRoute
   '/upload': typeof AppUploadRoute
+  '/api/etsy/callback': typeof ApiEtsyCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -77,12 +85,27 @@ export interface FileRoutesById {
   '/_app/publish': typeof AppPublishRoute
   '/_app/setup': typeof AppSetupRoute
   '/_app/upload': typeof AppUploadRoute
+  '/api/etsy/callback': typeof ApiEtsyCallbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/generate' | '/publish' | '/setup' | '/upload'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/generate'
+    | '/publish'
+    | '/setup'
+    | '/upload'
+    | '/api/etsy/callback'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/generate' | '/publish' | '/setup' | '/upload'
+  to:
+    | '/'
+    | '/auth'
+    | '/generate'
+    | '/publish'
+    | '/setup'
+    | '/upload'
+    | '/api/etsy/callback'
   id:
     | '__root__'
     | '/'
@@ -92,12 +115,14 @@ export interface FileRouteTypes {
     | '/_app/publish'
     | '/_app/setup'
     | '/_app/upload'
+    | '/api/etsy/callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiEtsyCallbackRoute: typeof ApiEtsyCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -151,6 +176,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppGenerateRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/etsy/callback': {
+      id: '/api/etsy/callback'
+      path: '/api/etsy/callback'
+      fullPath: '/api/etsy/callback'
+      preLoaderRoute: typeof ApiEtsyCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -174,7 +206,17 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiEtsyCallbackRoute: ApiEtsyCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
