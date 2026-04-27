@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { useServerFn } from "@tanstack/react-start";
+import { startEtsyOAuth, disconnectEtsy } from "@/server/etsy.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -101,11 +103,49 @@ function SetupPage() {
     else toast.success("Settings saved");
   };
 
+  const startOAuth = useServerFn(startEtsyOAuth);
+  const disconnect = useServerFn(disconnectEtsy);
+
+  // Show toast if redirected back from callback (handled by callback page itself,
+  // but refresh shop name here)
+  useEffect(() => {
+    if (!user) return;
+    const onFocus = async () => {
+      const { data } = await supabase
+        .from("etsy_connections")
+        .select("shop_name")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      setEtsyShopName(data?.shop_name ?? null);
+    };
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [user]);
+
   const connectEtsy = async () => {
     setConnecting(true);
-    // TODO: real OAuth wiring once Etsy keystring + secret are added
-    toast.info("Etsy OAuth setup coming next — waiting on your Etsy app credentials.");
-    setTimeout(() => setConnecting(false), 600);
+    try {
+      const res = await startOAuth({ data: { origin: window.location.origin } });
+      if (res.error) {
+        toast.error(res.error);
+        setConnecting(false);
+        return;
+      }
+      window.location.href = res.url!;
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to start Etsy OAuth");
+      setConnecting(false);
+    }
+  };
+
+  const disconnectEtsyHandler = async () => {
+    if (!confirm("Disconnect your Etsy shop?")) return;
+    const res = await disconnect({});
+    if (res.error) toast.error(res.error);
+    else {
+      setEtsyShopName(null);
+      toast.success("Etsy disconnected");
+    }
   };
 
   if (loading) {
