@@ -26,7 +26,7 @@ a{color:#fff;background:${color};padding:10px 18px;border-radius:8px;text-decora
 </style></head><body>
 <div class="box">
 <h1>${title}</h1>
-<p>${message}</p>
+<p>${safeMessage}</p>
 <a href="/setup">Back to Setup</a>
 </div>
 <script>setTimeout(()=>{window.location.href="/setup"},2500)</script>
