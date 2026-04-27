@@ -219,7 +219,6 @@ export const publishListings = createServerFn({ method: "POST" })
       interval: 1000,
       intervalCap: 4,
       timeout: 30_000,
-      throwOnTimeout: false,
     });
 
     const results = (await Promise.all(
