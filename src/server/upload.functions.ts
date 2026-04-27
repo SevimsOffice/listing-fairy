@@ -90,6 +90,7 @@ export const uploadListingImage = createServerFn({ method: "POST" })
           prompt: data.prompt ?? null,
           price: data.price ?? null,
           image_data: objectPath,
+          image_url: objectPath,
           status: "pending_generation",
         })
         .select("id")
