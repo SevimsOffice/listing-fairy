@@ -117,18 +117,10 @@ function SetupPage() {
   const startOAuth = useServerFn(startEtsyOAuth);
   const disconnect = useServerFn(disconnectEtsy);
 
-  // Show toast if redirected back from callback (handled by callback page itself,
-  // but refresh shop name here)
+  // Refresh shop status when user returns from Etsy consent screen
   useEffect(() => {
     if (!user) return;
-    const onFocus = async () => {
-      const { data } = await supabase
-        .from("etsy_connections")
-        .select("shop_name")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      setEtsyShopName(data?.shop_name ?? null);
-    };
+    const onFocus = () => fetchEtsyConnection(user.id);
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
   }, [user]);
@@ -154,10 +146,25 @@ function SetupPage() {
     const res = await disconnect({});
     if (res.error) toast.error(res.error);
     else {
-      setEtsyShopName(null);
+      setEtsyConnection(null);
       toast.success("Etsy disconnected");
     }
   };
+
+  const isConnected = !!etsyConnection;
+  const shopName = etsyConnection?.shop_name ?? null;
+  const lastSync = etsyConnection?.updated_at
+    ? new Date(etsyConnection.updated_at)
+    : null;
+  const lastSyncLabel = lastSync
+    ? lastSync.toLocaleString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      })
+    : null;
 
   if (loading) {
     return (
