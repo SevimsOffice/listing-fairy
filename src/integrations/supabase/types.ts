@@ -14,7 +14,159 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      draft_listings: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          etsy_listing_id: string | null
+          etsy_listing_url: string | null
+          generated_description: string | null
+          generated_tags: string[] | null
+          generated_title: string | null
+          grade_level: string | null
+          id: string
+          image_data: string | null
+          price: number | null
+          prompt: string | null
+          status: string
+          subject: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          etsy_listing_id?: string | null
+          etsy_listing_url?: string | null
+          generated_description?: string | null
+          generated_tags?: string[] | null
+          generated_title?: string | null
+          grade_level?: string | null
+          id?: string
+          image_data?: string | null
+          price?: number | null
+          prompt?: string | null
+          status?: string
+          subject?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          etsy_listing_id?: string | null
+          etsy_listing_url?: string | null
+          generated_description?: string | null
+          generated_tags?: string[] | null
+          generated_title?: string | null
+          grade_level?: string | null
+          id?: string
+          image_data?: string | null
+          price?: number | null
+          prompt?: string | null
+          status?: string
+          subject?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      etsy_connections: {
+        Row: {
+          access_token: string | null
+          created_at: string
+          etsy_user_id: string | null
+          expires_at: string | null
+          id: string
+          refresh_token: string | null
+          shop_id: string | null
+          shop_name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token?: string | null
+          created_at?: string
+          etsy_user_id?: string | null
+          expires_at?: string | null
+          id?: string
+          refresh_token?: string | null
+          shop_id?: string | null
+          shop_name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string | null
+          created_at?: string
+          etsy_user_id?: string | null
+          expires_at?: string | null
+          id?: string
+          refresh_token?: string | null
+          shop_id?: string | null
+          shop_name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      settings: {
+        Row: {
+          category: string
+          created_at: string
+          default_price: number
+          default_tags: string
+          id: string
+          shipping_profile: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          default_price?: number
+          default_tags?: string
+          id?: string
+          shipping_profile?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          default_price?: number
+          default_tags?: string
+          id?: string
+          shipping_profile?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
