@@ -15,7 +15,14 @@ export const startEtsyOAuth = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const keystring = process.env.ETSY_KEYSTRING;
     if (!keystring) {
-      return { error: "Etsy API key not configured on server." };
+      console.error("startEtsyOAuth error: ETSY_KEYSTRING missing", {
+        userId: context.userId?.substring(0, 8) + "...",
+        timestamp: new Date().toISOString(),
+      });
+      return {
+        error:
+          "We couldn't start the Etsy connection due to a technical issue. Please try again, or contact support if the problem persists.",
+      };
     }
 
     const { verifier, challenge, state: nonce } = generatePkce();
@@ -52,6 +59,16 @@ export const disconnectEtsy = createServerFn({ method: "POST" })
       .from("etsy_connections")
       .delete()
       .eq("user_id", userId);
-    if (error) return { error: error.message };
+    if (error) {
+      console.error("disconnectEtsy error:", {
+        error: error.message,
+        userId: userId?.substring(0, 8) + "...",
+        timestamp: new Date().toISOString(),
+      });
+      return {
+        error:
+          "We couldn't disconnect your Etsy account due to a technical issue. Please try again, or contact support if the problem persists.",
+      };
+    }
     return { success: true };
   });

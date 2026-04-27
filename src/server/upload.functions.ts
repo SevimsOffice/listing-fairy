@@ -76,8 +76,17 @@ export const uploadListingImage = createServerFn({ method: "POST" })
         });
 
       if (uploadErr) {
-        console.error("Storage upload error:", uploadErr);
-        return { success: false as const, error: "Upload failed. Please try again" };
+        console.error("Storage upload error:", {
+          error: uploadErr,
+          userId: userId?.substring(0, 8) + "...",
+          objectPath,
+          timestamp: new Date().toISOString(),
+        });
+        return {
+          success: false as const,
+          error:
+            "We couldn't upload your image due to a technical issue. Please try again, or contact support if the problem persists.",
+        };
       }
 
       // 6. Insert draft listing
@@ -97,10 +106,19 @@ export const uploadListingImage = createServerFn({ method: "POST" })
         .single();
 
       if (insertErr || !row) {
-        console.error("Insert draft_listing error:", insertErr);
+        console.error("Insert draft_listing error:", {
+          error: insertErr,
+          userId: userId?.substring(0, 8) + "...",
+          objectPath,
+          timestamp: new Date().toISOString(),
+        });
         // Best-effort cleanup
         await supabaseAdmin.storage.from(BUCKET).remove([objectPath]).catch(() => {});
-        return { success: false as const, error: "Upload failed. Please try again" };
+        return {
+          success: false as const,
+          error:
+            "We couldn't save your upload due to a technical issue. Please try again, or contact support if the problem persists.",
+        };
       }
 
       // 7. Signed URL for preview (1 hour)
@@ -115,7 +133,16 @@ export const uploadListingImage = createServerFn({ method: "POST" })
         url: signed?.signedUrl ?? null,
       };
     } catch (err) {
-      console.error("uploadListingImage error:", err);
-      return { success: false as const, error: "Upload failed. Please try again" };
+      console.error("uploadListingImage error:", {
+        error: err instanceof Error ? err.stack : err,
+        userId: userId?.substring(0, 8) + "...",
+        filename: data.filename,
+        timestamp: new Date().toISOString(),
+      });
+      return {
+        success: false as const,
+        error:
+          "We couldn't upload your image due to a technical issue. Please try again, or contact support if the problem persists.",
+      };
     }
   });
