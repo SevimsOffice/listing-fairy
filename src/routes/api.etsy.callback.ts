@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getCookie, deleteCookie } from "@tanstack/react-start/server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { exchangeEtsyCode, fetchEtsyUserAndShop } from "@/server/etsy.functions";
+import { exchangeEtsyCode, fetchEtsyUserAndShop } from "@/server/etsy.server";
 
 function html(message: string, ok: boolean) {
   const color = ok ? "#10b981" : "#ef4444";
