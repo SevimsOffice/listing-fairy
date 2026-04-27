@@ -60,15 +60,27 @@ function SetupPage() {
   const [shippingProfile, setShippingProfile] = useState("free");
   const [category, setCategory] = useState(categories[0]);
 
-  const [etsyShopName, setEtsyShopName] = useState<string | null>(null);
+  const [etsyConnection, setEtsyConnection] = useState<{
+    shop_name: string | null;
+    updated_at: string;
+  } | null>(null);
   const [connecting, setConnecting] = useState(false);
+
+  const fetchEtsyConnection = async (userId: string) => {
+    const { data } = await supabase
+      .from("etsy_connections")
+      .select("shop_name, updated_at")
+      .eq("user_id", userId)
+      .maybeSingle();
+    setEtsyConnection(data ?? null);
+  };
 
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const [{ data: s }, { data: e }] = await Promise.all([
+      const [{ data: s }] = await Promise.all([
         supabase.from("settings").select("*").eq("user_id", user.id).maybeSingle(),
-        supabase.from("etsy_connections").select("shop_name").eq("user_id", user.id).maybeSingle(),
+        fetchEtsyConnection(user.id),
       ]);
       if (s) {
         setDefaultPrice(String(s.default_price));
@@ -76,7 +88,6 @@ function SetupPage() {
         setShippingProfile(s.shipping_profile);
         setCategory(s.category);
       }
-      if (e?.shop_name) setEtsyShopName(e.shop_name);
       setLoading(false);
     })();
   }, [user]);
