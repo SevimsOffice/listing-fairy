@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { setCookie } from "@tanstack/react-start/server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { attachSupabaseAuth } from "@/integrations/supabase/auth-client-middleware";
 import {
   ETSY_AUTH_URL,
   SCOPES,
@@ -9,7 +10,7 @@ import {
 } from "./etsy.server";
 
 export const startEtsyOAuth = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([attachSupabaseAuth, requireSupabaseAuth])
   .inputValidator((input: { origin: string }) => input)
   .handler(async ({ data, context }) => {
     const keystring = process.env.ETSY_KEYSTRING;
@@ -43,7 +44,7 @@ export const startEtsyOAuth = createServerFn({ method: "POST" })
   });
 
 export const disconnectEtsy = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([attachSupabaseAuth, requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
     const { error } = await supabase
