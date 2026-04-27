@@ -196,14 +196,26 @@ function SetupPage() {
               )}
             </div>
           </div>
-          <Button onClick={connectEtsy} disabled={connecting} variant="outline">
-            {connecting ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Link2 className="h-4 w-4 mr-2" />
+          <div className="flex flex-col gap-2 shrink-0">
+            <Button onClick={connectEtsy} disabled={connecting} variant="outline">
+              {connecting ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Link2 className="h-4 w-4 mr-2" />
+              )}
+              {etsyShopName ? "Reconnect" : "Connect to Etsy"}
+            </Button>
+            {etsyShopName && (
+              <Button
+                onClick={disconnectEtsyHandler}
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground"
+              >
+                Disconnect
+              </Button>
             )}
-            {etsyShopName ? "Reconnect" : "Connect to Etsy"}
-          </Button>
+          </div>
         </div>
       </Card>
 
