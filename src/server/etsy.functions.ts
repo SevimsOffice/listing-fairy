@@ -18,14 +18,15 @@ export const startEtsyOAuth = createServerFn({ method: "POST" })
       return { error: "Etsy API key not configured on server." };
     }
 
-    const { verifier, challenge, state } = generatePkce();
+    const { verifier, challenge, state: nonce } = generatePkce();
+    const state = `${nonce}-${Date.now()}`;
 
     const cookieOpts = {
       httpOnly: true,
       secure: true,
-      sameSite: "lax" as const,
+      sameSite: "lax" as const, // must be "lax" so cookie survives OAuth redirect back from Etsy
       path: "/",
-      maxAge: 60 * 10,
+      maxAge: 60 * 5, // 5 minutes
     };
     setCookie("etsy_pkce_verifier", verifier, cookieOpts);
     setCookie("etsy_oauth_state", state, cookieOpts);
