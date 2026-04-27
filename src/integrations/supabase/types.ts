@@ -169,7 +169,27 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      etsy_connection_status: {
+        Row: {
+          shop_id: string | null
+          shop_name: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          shop_id?: string | null
+          shop_name?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          shop_id?: string | null
+          shop_name?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never

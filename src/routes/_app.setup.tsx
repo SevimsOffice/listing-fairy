@@ -70,11 +70,11 @@ function SetupPage() {
 
   const fetchEtsyConnection = async (userId: string) => {
     const { data } = await supabase
-      .from("etsy_connections")
+      .from("etsy_connection_status" as never)
       .select("shop_name, updated_at")
       .eq("user_id", userId)
       .maybeSingle();
-    setEtsyConnection(data ?? null);
+    setEtsyConnection((data as { shop_name: string | null; updated_at: string } | null) ?? null);
   };
 
   useEffect(() => {

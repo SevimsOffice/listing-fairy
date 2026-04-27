@@ -3,9 +3,19 @@ import { getCookie, deleteCookie } from "@tanstack/react-start/server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { exchangeEtsyCode, fetchEtsyUserAndShop } from "@/server/etsy.server";
 
+function escapeHtml(s: string) {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function html(message: string, ok: boolean) {
   const color = ok ? "#10b981" : "#ef4444";
   const title = ok ? "Etsy connected" : "Etsy connection failed";
+  const safeMessage = escapeHtml(message);
   return `<!doctype html><html><head><meta charset="utf-8"><title>${title}</title>
 <style>
 body{font-family:-apple-system,system-ui,sans-serif;background:#0b0b14;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:24px}
@@ -16,7 +26,7 @@ a{color:#fff;background:${color};padding:10px 18px;border-radius:8px;text-decora
 </style></head><body>
 <div class="box">
 <h1>${title}</h1>
-<p>${message}</p>
+<p>${safeMessage}</p>
 <a href="/setup">Back to Setup</a>
 </div>
 <script>setTimeout(()=>{window.location.href="/setup"},2500)</script>
@@ -49,7 +59,8 @@ export const Route = createFileRoute("/api/etsy/callback")({
           });
 
         if (error) {
-          return respond(errorDesc || error, false, 400);
+          console.error("Etsy OAuth provider error:", error, errorDesc);
+          return respond("Etsy denied the connection request. Please try again.", false, 400);
         }
         if (!code || !state || !verifier || !expectedState || !userId) {
           return respond("Missing OAuth parameters or session expired.", false, 400);
@@ -81,7 +92,8 @@ export const Route = createFileRoute("/api/etsy/callback")({
               { onConflict: "user_id" },
             );
           if (dbErr) {
-            return respond(`Failed to save connection: ${dbErr.message}`, false, 500);
+            console.error("Etsy callback DB error:", dbErr.message);
+            return respond("Connection failed. Please try again.", false, 500);
           }
 
           return respond(
@@ -91,7 +103,7 @@ export const Route = createFileRoute("/api/etsy/callback")({
         } catch (e) {
           const msg = e instanceof Error ? e.message : "Unknown error";
           console.error("Etsy OAuth callback error:", msg);
-          return respond(msg, false, 500);
+          return respond("Connection failed. Please try again.", false, 500);
         }
       },
     },
