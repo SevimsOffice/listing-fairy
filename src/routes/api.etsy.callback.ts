@@ -115,9 +115,20 @@ export const Route = createFileRoute("/api/etsy/callback")({
             true,
           );
         } catch (e) {
-          const msg = e instanceof Error ? e.message : "Unknown error";
-          console.error("Etsy OAuth callback error:", msg);
-          return respond("Connection failed. Please try again.", false, 500);
+          // Log full details server-side for debugging
+          console.error("Etsy OAuth callback error:", {
+            error: e instanceof Error ? e.stack : e,
+            code: code?.substring(0, 10) + "...",
+            userId: userId?.substring(0, 8) + "...",
+            timestamp: new Date().toISOString(),
+          });
+
+          // Generic message to user - never expose internal details
+          return respond(
+            "We couldn't connect to your Etsy account due to a technical issue. Please try again, or contact support if the problem persists.",
+            false,
+            500,
+          );
         }
       },
     },

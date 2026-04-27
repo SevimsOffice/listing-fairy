@@ -29,10 +29,17 @@ export const generateListing = createServerFn({ method: "POST" })
         ...result,
       };
     } catch (e) {
-      console.error("Generate listing error:", e);
+      // Log full details server-side for debugging
+      console.error("Generate listing error:", {
+        error: e instanceof Error ? e.stack : e,
+        imageId: data.imageId,
+        subject: data.subject?.substring(0, 30),
+        timestamp: new Date().toISOString(),
+      });
       return {
         success: false as const,
-        error: e instanceof Error ? e.message : "Failed to generate listing",
+        error:
+          "We couldn't generate your listing due to a technical issue. Please try again, or contact support if the problem persists.",
         imageId: data.imageId,
       };
     }
