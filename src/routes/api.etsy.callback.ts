@@ -59,7 +59,8 @@ export const Route = createFileRoute("/api/etsy/callback")({
           });
 
         if (error) {
-          return respond(errorDesc || error, false, 400);
+          console.error("Etsy OAuth provider error:", error, errorDesc);
+          return respond("Etsy denied the connection request. Please try again.", false, 400);
         }
         if (!code || !state || !verifier || !expectedState || !userId) {
           return respond("Missing OAuth parameters or session expired.", false, 400);
@@ -91,7 +92,8 @@ export const Route = createFileRoute("/api/etsy/callback")({
               { onConflict: "user_id" },
             );
           if (dbErr) {
-            return respond(`Failed to save connection: ${dbErr.message}`, false, 500);
+            console.error("Etsy callback DB error:", dbErr.message);
+            return respond("Connection failed. Please try again.", false, 500);
           }
 
           return respond(
@@ -101,7 +103,7 @@ export const Route = createFileRoute("/api/etsy/callback")({
         } catch (e) {
           const msg = e instanceof Error ? e.message : "Unknown error";
           console.error("Etsy OAuth callback error:", msg);
-          return respond(msg, false, 500);
+          return respond("Connection failed. Please try again.", false, 500);
         }
       },
     },
