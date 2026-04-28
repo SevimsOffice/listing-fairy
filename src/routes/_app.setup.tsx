@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -31,8 +31,44 @@ import {
   RefreshCw,
 } from "lucide-react";
 
+function SetupErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+  const router = useRouter();
+  return (
+    <div className="flex min-h-[60vh] items-center justify-center px-4">
+      <Card className="max-w-md w-full p-6 text-center">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+          <XCircle className="h-6 w-6 text-destructive" />
+        </div>
+        <h2 className="text-xl font-semibold text-foreground">Setup failed to load</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          We couldn't load your setup page. Please try again.
+        </p>
+        {import.meta.env.DEV && error?.message && (
+          <pre className="mt-4 max-h-40 overflow-auto rounded-md bg-muted p-3 text-left font-mono text-xs text-destructive">
+            {error.message}
+          </pre>
+        )}
+        <div className="mt-6 flex items-center justify-center gap-3">
+          <Button
+            onClick={() => {
+              router.invalidate();
+              reset();
+            }}
+          >
+            <RefreshCw className="mr-1" /> Retry
+          </Button>
+          <Button variant="outline" asChild>
+            <Link to="/">Go home</Link>
+          </Button>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
 export const Route = createFileRoute("/_app/setup")({
   component: SetupPage,
+  errorComponent: SetupErrorComponent,
   head: () => ({ meta: [{ title: "Setup — Etsy Listing Generator" }] }),
 });
 
