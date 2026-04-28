@@ -232,6 +232,31 @@ function SetupPage() {
     : null;
 
   if (loading) {
+    if (timedOut) {
+      return (
+        <div className="flex h-full items-center justify-center p-6">
+          <Card className="max-w-md w-full p-6 text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+              <Clock className="h-6 w-6 text-destructive" />
+            </div>
+            <h2 className="text-xl font-semibold text-foreground">
+              Setup is taking too long
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              We couldn't load your setup in time. Please check your connection and try again.
+            </p>
+            <div className="mt-6 flex items-center justify-center gap-3">
+              <Button onClick={() => setLoadAttempt((n) => n + 1)}>
+                <RefreshCw className="h-4 w-4 mr-1" /> Retry
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to="/">Go home</Link>
+              </Button>
+            </div>
+          </Card>
+        </div>
+      );
+    }
     return (
       <div className="flex h-full items-center justify-center p-12">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
