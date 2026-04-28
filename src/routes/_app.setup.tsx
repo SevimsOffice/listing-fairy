@@ -89,6 +89,8 @@ const categories = [
 function SetupPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [timedOut, setTimedOut] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [saving, setSaving] = useState(false);
 
   const [defaultPrice, setDefaultPrice] = useState("5.99");
@@ -115,20 +117,45 @@ function SetupPage() {
 
   useEffect(() => {
     if (!user) return;
+    let cancelled = false;
+    setLoading(true);
+    setTimedOut(false);
+
+    const timeoutId = window.setTimeout(() => {
+      if (!cancelled) setTimedOut(true);
+    }, 10000);
+
     (async () => {
-      const [{ data: s }] = await Promise.all([
-        supabase.from("settings").select("*").eq("user_id", user.id).maybeSingle(),
-        fetchEtsyConnection(user.id),
-      ]);
-      if (s) {
-        setDefaultPrice(String(s.default_price));
-        setDefaultTags(s.default_tags);
-        setShippingProfile(s.shipping_profile);
-        setCategory(s.category);
+      try {
+        const [{ data: s }] = await Promise.all([
+          supabase.from("settings").select("*").eq("user_id", user.id).maybeSingle(),
+          fetchEtsyConnection(user.id),
+        ]);
+        if (cancelled) return;
+        if (s) {
+          setDefaultPrice(String(s.default_price));
+          setDefaultTags(s.default_tags);
+          setShippingProfile(s.shipping_profile);
+          setCategory(s.category);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          console.error("Setup load failed:", e);
+          setTimedOut(true);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+          window.clearTimeout(timeoutId);
+        }
       }
-      setLoading(false);
     })();
-  }, [user]);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [user, loadAttempt]);
 
   const save = async () => {
     if (!user) return;
