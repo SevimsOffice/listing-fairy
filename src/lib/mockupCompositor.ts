@@ -1,3 +1,9 @@
+import room1 from "@/assets/mockups/room-1-living-white.jpg";
+import room2 from "@/assets/mockups/room-2-boho.jpg";
+import room3 from "@/assets/mockups/room-3-brick-desk.jpg";
+import room4 from "@/assets/mockups/room-4-midcentury.jpg";
+import room5 from "@/assets/mockups/room-5-scandinavian.jpg";
+
 export type MockupTemplate = {
   id: string;
   name: string;
@@ -10,31 +16,31 @@ export const MOCKUP_TEMPLATES: MockupTemplate[] = [
   {
     id: "living-white",
     name: "White Living Room",
-    image: "/mockups/room-1-living-white.jpg",
+    image: room1,
     frame: { x: 0.395, y: 0.10, width: 0.235, height: 0.62 },
   },
   {
     id: "boho",
     name: "Boho Rattan",
-    image: "/mockups/room-2-boho.jpg",
+    image: room2,
     frame: { x: 0.27, y: 0.13, width: 0.235, height: 0.61 },
   },
   {
     id: "brick-desk",
     name: "Brick Wall Desk",
-    image: "/mockups/room-3-brick-desk.jpg",
+    image: room3,
     frame: { x: 0.21, y: 0.04, width: 0.62, height: 0.62 },
   },
   {
     id: "midcentury",
     name: "Mid-Century Sideboard",
-    image: "/mockups/room-4-midcentury.jpg",
+    image: room4,
     frame: { x: 0.42, y: 0.20, width: 0.32, height: 0.34 },
   },
   {
     id: "scandinavian",
     name: "Scandinavian Tan",
-    image: "/mockups/room-5-scandinavian.jpg",
+    image: room5,
     frame: { x: 0.32, y: 0.10, width: 0.275, height: 0.57 },
   },
 ];
