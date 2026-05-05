@@ -4,7 +4,6 @@ export function loadImageFromFile(file: File): Promise<HTMLImageElement> {
   return new Promise((res, rej) => {
     const url = URL.createObjectURL(file);
     const img = new Image();
-    img.crossOrigin = "anonymous";
     img.onload = () => {
       setTimeout(() => URL.revokeObjectURL(url), 5000);
       res(img);

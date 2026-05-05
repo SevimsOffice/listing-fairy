@@ -42,9 +42,8 @@ export const MOCKUP_TEMPLATES: MockupTemplate[] = [
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((res, rej) => {
     const img = new Image();
-    img.crossOrigin = "anonymous";
     img.onload = () => res(img);
-    img.onerror = rej;
+    img.onerror = () => rej(new Error(`Failed to load image: ${src}`));
     img.src = src;
   });
 }
