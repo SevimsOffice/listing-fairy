@@ -21,8 +21,19 @@ import {
   ArrowRight,
 } from "lucide-react";
 
+function UploadErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+  return (
+    <div className="max-w-md mx-auto mt-20 p-6 text-center">
+      <h2 className="text-xl font-semibold">Upload page failed to load</h2>
+      <p className="mt-2 text-sm text-muted-foreground">{error?.message ?? "Unknown error"}</p>
+      <Button onClick={reset} className="mt-4">Try again</Button>
+    </div>
+  );
+}
+
 export const Route = createFileRoute("/_app/upload")({
   component: UploadPage,
+  errorComponent: UploadErrorComponent,
   head: () => ({ meta: [{ title: "Upload — Etsy Listing Generator" }] }),
 });
 
