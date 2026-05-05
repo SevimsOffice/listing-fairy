@@ -15,6 +15,7 @@ import {
   XCircle,
   ArrowRight,
   RefreshCw,
+  Trash2,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_app/generate")({
@@ -191,6 +192,24 @@ function GeneratePage() {
       });
   }
 
+  async function removeListing(listing: ListingRow) {
+    if (!user) return;
+    if (!confirm("Remove this listing? This cannot be undone.")) return;
+    const prev = listings;
+    setListings((p) => p.filter((l) => l.id !== listing.id));
+    const { error } = await supabase
+      .from("draft_listings")
+      .delete()
+      .eq("id", listing.id)
+      .eq("user_id", user.id);
+    if (error) {
+      setListings(prev);
+      toast.error("Failed to remove", { description: error.message });
+    } else {
+      toast.success("Listing removed");
+    }
+  }
+
   const pending = listings.filter(
     (l) => itemStates[l.id] === "idle" || itemStates[l.id] === "error",
   );
@@ -329,7 +348,19 @@ function GeneratePage() {
                               : "—"}
                           </p>
                         </div>
-                        <StatusIcon state={state} />
+                        <div className="flex items-center gap-2">
+                          <StatusIcon state={state} />
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            disabled={isGenerating || state === "generating"}
+                            onClick={() => removeListing(listing)}
+                            aria-label="Remove listing"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                       {state === "success" && listing.generated_tags && (
                         <p className="text-xs text-muted-foreground mt-2 line-clamp-1">
