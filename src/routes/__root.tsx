@@ -74,6 +74,7 @@ function RootComponent() {
   return (
     <AuthProvider>
       <Outlet />
+      <Toaster />
     </AuthProvider>
   );
 }
