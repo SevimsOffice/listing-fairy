@@ -192,7 +192,23 @@ function GeneratePage() {
       });
   }
 
-  const pending = listings.filter(
+  async function removeListing(listing: ListingRow) {
+    if (!user) return;
+    if (!confirm("Remove this listing? This cannot be undone.")) return;
+    const prev = listings;
+    setListings((p) => p.filter((l) => l.id !== listing.id));
+    const { error } = await supabase
+      .from("draft_listings")
+      .delete()
+      .eq("id", listing.id)
+      .eq("user_id", user.id);
+    if (error) {
+      setListings(prev);
+      toast.error("Failed to remove", { description: error.message });
+    } else {
+      toast.success("Listing removed");
+    }
+  }
     (l) => itemStates[l.id] === "idle" || itemStates[l.id] === "error",
   );
   const failed = listings.filter((l) => itemStates[l.id] === "error");
