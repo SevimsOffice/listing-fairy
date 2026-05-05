@@ -119,6 +119,9 @@ function AuthPage() {
               </TabsContent>
             ))}
           </Tabs>
+          {errorMsg && (
+            <p className="mt-4 text-sm text-destructive text-center">{errorMsg}</p>
+          )}
         </Card>
 
         <p className="text-center text-xs text-muted-foreground mt-6">
