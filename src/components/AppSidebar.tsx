@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Settings, Upload, Sparkles, Send, LogOut, Store } from "lucide-react";
+import { Settings, Upload, Sparkles, Send, LogOut, Store, Wand2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ const items = [
   { to: "/setup", label: "Setup", icon: Settings },
   { to: "/upload", label: "Upload", icon: Upload },
   { to: "/generate", label: "Generate", icon: Sparkles },
+  { to: "/generator", label: "Generator", icon: Wand2 },
   { to: "/publish", label: "Publish", icon: Send },
 ] as const;
 

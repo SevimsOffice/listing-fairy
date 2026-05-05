@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppUploadRouteImport } from './routes/_app.upload'
 import { Route as AppSetupRouteImport } from './routes/_app.setup'
 import { Route as AppPublishRouteImport } from './routes/_app.publish'
+import { Route as AppGeneratorRouteImport } from './routes/_app.generator'
 import { Route as AppGenerateRouteImport } from './routes/_app.generate'
 import { Route as ApiEtsyCallbackRouteImport } from './routes/api.etsy.callback'
 
@@ -47,6 +48,11 @@ const AppPublishRoute = AppPublishRouteImport.update({
   path: '/publish',
   getParentRoute: () => AppRoute,
 } as any)
+const AppGeneratorRoute = AppGeneratorRouteImport.update({
+  id: '/generator',
+  path: '/generator',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppGenerateRoute = AppGenerateRouteImport.update({
   id: '/generate',
   path: '/generate',
@@ -62,6 +68,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/generate': typeof AppGenerateRoute
+  '/generator': typeof AppGeneratorRoute
   '/publish': typeof AppPublishRoute
   '/setup': typeof AppSetupRoute
   '/upload': typeof AppUploadRoute
@@ -71,6 +78,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/generate': typeof AppGenerateRoute
+  '/generator': typeof AppGeneratorRoute
   '/publish': typeof AppPublishRoute
   '/setup': typeof AppSetupRoute
   '/upload': typeof AppUploadRoute
@@ -82,6 +90,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/_app/generate': typeof AppGenerateRoute
+  '/_app/generator': typeof AppGeneratorRoute
   '/_app/publish': typeof AppPublishRoute
   '/_app/setup': typeof AppSetupRoute
   '/_app/upload': typeof AppUploadRoute
@@ -93,6 +102,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/generate'
+    | '/generator'
     | '/publish'
     | '/setup'
     | '/upload'
@@ -102,6 +112,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/generate'
+    | '/generator'
     | '/publish'
     | '/setup'
     | '/upload'
@@ -112,6 +123,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/auth'
     | '/_app/generate'
+    | '/_app/generator'
     | '/_app/publish'
     | '/_app/setup'
     | '/_app/upload'
@@ -169,6 +181,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPublishRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/generator': {
+      id: '/_app/generator'
+      path: '/generator'
+      fullPath: '/generator'
+      preLoaderRoute: typeof AppGeneratorRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/generate': {
       id: '/_app/generate'
       path: '/generate'
@@ -188,6 +207,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppGenerateRoute: typeof AppGenerateRoute
+  AppGeneratorRoute: typeof AppGeneratorRoute
   AppPublishRoute: typeof AppPublishRoute
   AppSetupRoute: typeof AppSetupRoute
   AppUploadRoute: typeof AppUploadRoute
@@ -195,6 +215,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppGenerateRoute: AppGenerateRoute,
+  AppGeneratorRoute: AppGeneratorRoute,
   AppPublishRoute: AppPublishRoute,
   AppSetupRoute: AppSetupRoute,
   AppUploadRoute: AppUploadRoute,
@@ -211,13 +232,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
