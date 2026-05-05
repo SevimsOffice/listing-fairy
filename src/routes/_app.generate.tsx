@@ -15,6 +15,7 @@ import {
   XCircle,
   ArrowRight,
   RefreshCw,
+  Trash2,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_app/generate")({
