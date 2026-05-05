@@ -209,6 +209,8 @@ function GeneratePage() {
       toast.success("Listing removed");
     }
   }
+
+  const pending = listings.filter(
     (l) => itemStates[l.id] === "idle" || itemStates[l.id] === "error",
   );
   const failed = listings.filter((l) => itemStates[l.id] === "error");
