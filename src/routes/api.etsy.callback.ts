@@ -16,6 +16,7 @@ function html(message: string, ok: boolean) {
   const color = ok ? "#10b981" : "#ef4444";
   const title = ok ? "Etsy connected" : "Etsy connection failed";
   const safeMessage = escapeHtml(message);
+  const payload = JSON.stringify({ type: "etsy-oauth-complete", ok });
   return `<!doctype html><html><head><meta charset="utf-8"><title>${title}</title>
 <style>
 body{font-family:-apple-system,system-ui,sans-serif;background:#0b0b14;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:24px}
@@ -29,7 +30,15 @@ a{color:#fff;background:${color};padding:10px 18px;border-radius:8px;text-decora
 <p>${safeMessage}</p>
 <a href="/setup">Back to Setup</a>
 </div>
-<script>setTimeout(()=>{window.location.href="/setup"},2500)</script>
+<script>
+const payload=${payload};
+if(window.opener&&!window.opener.closed){
+  window.opener.postMessage(payload, window.location.origin);
+  setTimeout(()=>window.close(),1200);
+}else{
+  setTimeout(()=>{window.location.href="/setup"},2500);
+}
+</script>
 </body></html>`;
 }
 

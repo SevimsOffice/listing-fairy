@@ -186,8 +186,19 @@ function SetupPage() {
   useEffect(() => {
     if (!user) return;
     const onFocus = () => fetchEtsyConnection(user.id);
+    const onMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      if (event.data?.type !== "etsy-oauth-complete") return;
+      fetchEtsyConnection(user.id);
+      if (event.data.ok) toast.success("Etsy connected");
+      else toast.error("Etsy refused to connect. Please try again.");
+    };
     window.addEventListener("focus", onFocus);
-    return () => window.removeEventListener("focus", onFocus);
+    window.addEventListener("message", onMessage);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("message", onMessage);
+    };
   }, [user]);
 
   const connectEtsy = async () => {
@@ -199,7 +210,19 @@ function SetupPage() {
         setConnecting(false);
         return;
       }
-      window.location.href = res.url!;
+      const popup = window.open(res.url!, "etsy-oauth", "width=720,height=760");
+      if (!popup) {
+        toast.error("Popup blocked. Please allow popups and try again.");
+        setConnecting(false);
+        return;
+      }
+      const popupCheck = window.setInterval(() => {
+        if (popup.closed) {
+          window.clearInterval(popupCheck);
+          setConnecting(false);
+          if (user) fetchEtsyConnection(user.id);
+        }
+      }, 500);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to start Etsy OAuth");
       setConnecting(false);
