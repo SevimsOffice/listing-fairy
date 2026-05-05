@@ -27,15 +27,19 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && user) navigate({ to: "/setup" });
   }, [user, loading, navigate]);
 
   const handle = async (mode: "signin" | "signup") => {
+    setErrorMsg(null);
     const parsed = schema.safeParse({ email, password });
     if (!parsed.success) {
-      toast.error(parsed.error.issues[0].message);
+      const msg = parsed.error.issues[0].message;
+      setErrorMsg(msg);
+      toast.error(msg);
       return;
     }
     setSubmitting(true);
@@ -50,10 +54,15 @@ function AuthPage() {
             });
       const { error } = await fn;
       if (error) {
+        setErrorMsg(error.message);
         toast.error(error.message);
       } else {
-        toast.success(mode === "signin" ? "Welcome back!" : "Account created!");
+        toast.success(mode === "signin" ? "Welcome back!" : "Account created! Check your email to confirm.");
       }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Something went wrong";
+      setErrorMsg(msg);
+      toast.error(msg);
     } finally {
       setSubmitting(false);
     }
