@@ -348,7 +348,19 @@ function GeneratePage() {
                               : "—"}
                           </p>
                         </div>
-                        <StatusIcon state={state} />
+                        <div className="flex items-center gap-2">
+                          <StatusIcon state={state} />
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            disabled={isGenerating || state === "generating"}
+                            onClick={() => removeListing(listing)}
+                            aria-label="Remove listing"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                       {state === "success" && listing.generated_tags && (
                         <p className="text-xs text-muted-foreground mt-2 line-clamp-1">
