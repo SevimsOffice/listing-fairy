@@ -83,7 +83,12 @@ export async function compositeMockup(
   const dx = fx + (fw - dw) / 2;
   const dy = fy + (fh - dh) / 2;
 
-  // Subtle drop shadow for realism
+  // Cover any existing artwork on the wall with a solid white block
+  // sized to the full frame area before placing the new artwork.
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(fx, fy, fw, fh);
+
+  // Subtle drop shadow for realism around the placed artwork
   ctx.save();
   ctx.shadowColor = "rgba(0,0,0,0.25)";
   ctx.shadowBlur = 25;
