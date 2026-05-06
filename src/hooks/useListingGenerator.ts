@@ -55,13 +55,7 @@ export function useListingGenerator() {
   const generate = useCallback(async (file: File) => {
     try {
       setError(null);
-      setAssets((prev) => {
-        if (prev) {
-          prev.mockups.forEach((m) => URL.revokeObjectURL(m.url));
-          URL.revokeObjectURL(prev.infoSlideUrl);
-        }
-        return null;
-      });
+      setAssets(null);
       setCurrentMockup(0);
 
       setStep("upscaling");
