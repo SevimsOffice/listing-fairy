@@ -12,23 +12,13 @@ export default function ListingGenerator() {
     progress,
     error,
     assets,
+    stepLabel,
     downloadFormat,
     downloadMockup,
     downloadAll,
     reset,
     isLoading,
   } = useListingGenerator();
-
-  const stepLabel =
-    step === "converting"
-      ? "Converting to PNG, JPG & PDF…"
-      : step === "generating-mockups"
-        ? `Generating ${MOCKUP_TEMPLATES.length} room mockups…`
-        : step === "generating-info"
-          ? "Creating info slide…"
-          : step === "done"
-            ? "All assets ready!"
-            : "";
 
   const allMockups = assets
     ? [
