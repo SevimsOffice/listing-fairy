@@ -12,23 +12,13 @@ export default function ListingGenerator() {
     progress,
     error,
     assets,
+    stepLabel,
     downloadFormat,
     downloadMockup,
     downloadAll,
     reset,
     isLoading,
   } = useListingGenerator();
-
-  const stepLabel =
-    step === "converting"
-      ? "Converting to PNG, JPG & PDF…"
-      : step === "generating-mockups"
-        ? `Generating ${MOCKUP_TEMPLATES.length} room mockups…`
-        : step === "generating-info"
-          ? "Creating info slide…"
-          : step === "done"
-            ? "All assets ready!"
-            : "";
 
   const allMockups = assets
     ? [
@@ -76,8 +66,13 @@ export default function ListingGenerator() {
       {step === "done" && assets && (
         <div className="space-y-8">
           <section>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-semibold text-foreground">📦 Digital Download Files</h2>
+            <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
+              <div className="flex items-center gap-2">
+                <h2 className="font-semibold text-foreground">📦 Digital Download Files</h2>
+                <span className="text-xs bg-emerald-100 text-emerald-700 font-semibold px-2 py-0.5 rounded-full">
+                  ✨ Print-Ready 300 DPI
+                </span>
+              </div>
               <span className="text-xs text-muted-foreground">
                 Include all 3 in your Etsy listing
               </span>

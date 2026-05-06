@@ -4,13 +4,31 @@ export function FormatDownloads({
   onDownload: (f: "png" | "jpg" | "pdf") => void;
 }) {
   const formats = [
-    { key: "png" as const, icon: "🖼️", label: "PNG", desc: "Transparent, lossless" },
-    { key: "jpg" as const, icon: "📷", label: "JPG", desc: "Compressed, universal" },
-    { key: "pdf" as const, icon: "📄", label: "PDF", desc: "Print-ready, A4" },
+    {
+      key: "png" as const,
+      icon: "🖼️",
+      label: "PNG",
+      desc: "Transparent, lossless",
+      spec: "4800 × 3200 px · 300 DPI",
+    },
+    {
+      key: "jpg" as const,
+      icon: "📷",
+      label: "JPG",
+      desc: "Compressed, universal",
+      spec: "4800 × 3200 px · 300 DPI · 97%",
+    },
+    {
+      key: "pdf" as const,
+      icon: "📄",
+      label: "PDF",
+      desc: "Print-ready",
+      spec: "Custom page · 300 DPI",
+    },
   ];
   return (
     <div className="grid grid-cols-3 gap-3">
-      {formats.map(({ key, icon, label, desc }) => (
+      {formats.map(({ key, icon, label, desc, spec }) => (
         <button
           key={key}
           onClick={() => onDownload(key)}
@@ -21,6 +39,9 @@ export function FormatDownloads({
             {label}
           </span>
           <span className="text-xs text-muted-foreground mt-0.5 text-center">{desc}</span>
+          <span className="text-[10px] text-muted-foreground/70 mt-1 text-center leading-tight">
+            {spec}
+          </span>
         </button>
       ))}
     </div>
