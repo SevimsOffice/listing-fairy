@@ -1,0 +1,1 @@
+CREATE POLICY "Users view own etsy" ON public.etsy_connections FOR SELECT USING (auth.uid() = user_id);
