@@ -116,6 +116,16 @@ function AuthPage() {
                   {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   {mode === "signin" ? "Sign in" : "Create account"}
                 </Button>
+                {mode === "signin" && (
+                  <div className="text-center">
+                    <Link
+                      to="/forgot-password"
+                      className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
+                )}
               </TabsContent>
             ))}
           </Tabs>
