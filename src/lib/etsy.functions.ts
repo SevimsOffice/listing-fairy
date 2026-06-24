@@ -7,7 +7,7 @@ import {
   SCOPES,
   generatePkce,
   getRedirectUri,
-} from "./etsy.server";
+} from "@/server/etsy.server";
 
 export const startEtsyOAuth = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth, requireSupabaseAuth])
