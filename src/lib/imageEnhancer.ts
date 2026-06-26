@@ -257,8 +257,22 @@ export async function enhanceAndExport(
   const img = await loadImage(file);
   const srcW = img.naturalWidth;
   const srcH = img.naturalHeight;
-  const finalW = targetWidth ?? Math.round(srcW * scaleFactor);
-  const finalH = targetHeight ?? Math.round(srcH * scaleFactor);
+  let finalW = targetWidth ?? Math.round(srcW * scaleFactor);
+  let finalH = targetHeight ?? Math.round(srcH * scaleFactor);
+
+  // Clamp to safe canvas limits. Browsers cap canvas dimensions (~16384px per
+  // edge) and total area; exceeding them makes drawImage/toBlob silently fail
+  // (toBlob returns null → "toBlob failed"). Scale the target down uniformly so
+  // a large source still produces valid output instead of aborting generation.
+  const MAX_EDGE = 12000;
+  const MAX_AREA = 100_000_000; // ~100MP
+  const edgeScale = Math.min(1, MAX_EDGE / finalW, MAX_EDGE / finalH);
+  const areaScale = Math.min(1, Math.sqrt(MAX_AREA / (finalW * finalH)));
+  const clamp = Math.min(edgeScale, areaScale);
+  if (clamp < 1) {
+    finalW = Math.max(1, Math.round(finalW * clamp));
+    finalH = Math.max(1, Math.round(finalH * clamp));
+  }
 
   const upscaled = multiStepUpscale(img, srcW, srcH, finalW, finalH, smoothing);
 
