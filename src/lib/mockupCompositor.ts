@@ -3,10 +3,7 @@ import room2 from "@/assets/mockups/room-2-boho.jpg";
 import room3 from "@/assets/mockups/room-3-brick-desk.jpg";
 import room4 from "@/assets/mockups/room-4-midcentury.jpg";
 import room5 from "@/assets/mockups/room-5-scandinavian.jpg";
-// PLACEHOLDER: replace this import with the real child-study-room photo,
-// e.g. `import room6 from "@/assets/mockups/room-6-child-study.jpg";`
-// then recalibrate the `frame` coords on the "child-study" template below.
-import room6 from "@/assets/mockups/room-1-living-white.jpg";
+import room6 from "@/assets/mockups/room-6-child-study.jpg";
 
 export type MockupTemplate = {
   id: string;
@@ -51,8 +48,7 @@ export const MOCKUP_TEMPLATES: MockupTemplate[] = [
     id: "child-study",
     name: "Child Study Room",
     image: room6,
-    // PLACEHOLDER frame — recalibrate once the real child-study photo is added.
-    frame: { x: 0.35, y: 0.12, width: 0.3, height: 0.6 },
+    frame: { x: 0.28, y: 0.115, width: 0.443, height: 0.478 },
   },
 ];
 
