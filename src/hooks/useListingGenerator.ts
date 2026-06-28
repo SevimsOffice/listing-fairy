@@ -19,14 +19,16 @@ export type GeneratorStep =
 type Mockup = { templateId: string; templateName: string; url: string; blob: Blob };
 
 type Assets = {
-  pngBlob: Blob;
-  jpgBlob: Blob;
-  pdfBlob: Blob;
-  pngName: string;
-  jpgName: string;
-  pdfName: string;
-  enhancedWidth: number;
-  enhancedHeight: number;
+  // Digital download formats are optional: they come from the upscale step,
+  // which can fail (e.g. very large source) without affecting the mockups.
+  pngBlob?: Blob;
+  jpgBlob?: Blob;
+  pdfBlob?: Blob;
+  pngName?: string;
+  jpgName?: string;
+  pdfName?: string;
+  enhancedWidth?: number;
+  enhancedHeight?: number;
   infoSlideBlob: Blob;
   infoSlideUrl: string;
   originalName: string;
@@ -37,6 +39,7 @@ export function useListingGenerator() {
   const [step, setStep] = useState<GeneratorStep>("idle");
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
   const [assets, setAssets] = useState<Assets | null>(null);
   const [currentMockup, setCurrentMockup] = useState(0);
 
@@ -48,6 +51,7 @@ export function useListingGenerator() {
     setStep("idle");
     setProgress(0);
     setError(null);
+    setWarning(null);
     setAssets(null);
     setCurrentMockup(0);
   }, [assets]);
@@ -55,28 +59,19 @@ export function useListingGenerator() {
   const generate = useCallback(async (file: File) => {
     try {
       setError(null);
+      setWarning(null);
       setAssets(null);
       setCurrentMockup(0);
 
-      setStep("upscaling");
-      setProgress(5);
-      // Run enhancement in chunks so UI can update labels
-      const enhanced = await enhanceAndExport(file, {
-        targetDPI: 300,
-        scaleFactor: 3.125,
-        jpegQuality: 0.97,
-        smoothing: "high",
-      });
-      setStep("embedding-dpi");
-      setProgress(25);
-      // (DPI metadata is embedded inside enhanceAndExport)
-      setStep("generating-pdf");
-      setProgress(35);
-
-      // Load original (un-upscaled) artwork for mockup compositing
+      // ── Mockups first ───────────────────────────────────────────────
+      // These are pure client-side canvas compositing (no API, no upscale
+      // dependency) and are the primary deliverable, so generate them before
+      // the heavier enhancement step. That way a failure in enhancement can
+      // never discard already-generated mockups.
       const art = await loadImageFromFile(file);
 
       setStep("generating-mockups");
+      setProgress(5);
       const mockups: Mockup[] = [];
       for (let i = 0; i < MOCKUP_TEMPLATES.length; i++) {
         setCurrentMockup(i + 1);
@@ -88,23 +83,47 @@ export function useListingGenerator() {
           blob,
           url: URL.createObjectURL(blob),
         });
-        setProgress(35 + Math.round(((i + 1) / MOCKUP_TEMPLATES.length) * 50));
+        setProgress(5 + Math.round(((i + 1) / MOCKUP_TEMPLATES.length) * 45));
       }
 
       setStep("generating-slide");
       const infoSlideBlob = await generateInfoSlide();
       const infoSlideUrl = URL.createObjectURL(infoSlideBlob);
+      setProgress(55);
+
+      // ── Enhancement / digital download formats (non-fatal) ──────────
+      // Wrapped separately: if upscaling/export fails the mockups still ship.
+      let enhanced: Awaited<ReturnType<typeof enhanceAndExport>> | null = null;
+      try {
+        setStep("upscaling");
+        setProgress(60);
+        enhanced = await enhanceAndExport(file, {
+          targetDPI: 300,
+          scaleFactor: 3.125,
+          jpegQuality: 0.97,
+          smoothing: "high",
+        });
+      } catch (e) {
+        console.error("Enhancement failed (mockups unaffected):", e);
+        setWarning(
+          "Mockups are ready, but the print-ready download formats (PNG/JPG/PDF) couldn't be generated for this image. Try a smaller source image.",
+        );
+      }
       setProgress(100);
 
       setAssets({
-        pngBlob: enhanced.png.blob,
-        jpgBlob: enhanced.jpg.blob,
-        pdfBlob: enhanced.pdf.blob,
-        pngName: enhanced.png.name,
-        jpgName: enhanced.jpg.name,
-        pdfName: enhanced.pdf.name,
-        enhancedWidth: enhanced.width,
-        enhancedHeight: enhanced.height,
+        ...(enhanced
+          ? {
+              pngBlob: enhanced.png.blob,
+              jpgBlob: enhanced.jpg.blob,
+              pdfBlob: enhanced.pdf.blob,
+              pngName: enhanced.png.name,
+              jpgName: enhanced.jpg.name,
+              pdfName: enhanced.pdf.name,
+              enhancedWidth: enhanced.width,
+              enhancedHeight: enhanced.height,
+            }
+          : {}),
         infoSlideBlob,
         infoSlideUrl,
         originalName: file.name.replace(/\.[^.]+$/, "") || "artwork",
@@ -126,7 +145,8 @@ export function useListingGenerator() {
         jpg: { blob: assets.jpgBlob, name: assets.jpgName },
         pdf: { blob: assets.pdfBlob, name: assets.pdfName },
       };
-      saveAs(map[f].blob, map[f].name);
+      const item = map[f];
+      if (item.blob && item.name) saveAs(item.blob, item.name);
     },
     [assets],
   );
@@ -147,9 +167,9 @@ export function useListingGenerator() {
   const downloadAll = useCallback(async () => {
     if (!assets) return;
     const zip = new JSZip();
-    zip.file(assets.pngName, assets.pngBlob);
-    zip.file(assets.jpgName, assets.jpgBlob);
-    zip.file(assets.pdfName, assets.pdfBlob);
+    if (assets.pngBlob && assets.pngName) zip.file(assets.pngName, assets.pngBlob);
+    if (assets.jpgBlob && assets.jpgName) zip.file(assets.jpgName, assets.jpgBlob);
+    if (assets.pdfBlob && assets.pdfName) zip.file(assets.pdfName, assets.pdfBlob);
     const folder = zip.folder("mockups")!;
     assets.mockups.forEach((m) =>
       folder.file(`${assets.originalName}-${m.templateId}.jpg`, m.blob),
@@ -180,6 +200,7 @@ export function useListingGenerator() {
     step,
     progress,
     error,
+    warning,
     assets,
     stepLabel,
     downloadFormat,

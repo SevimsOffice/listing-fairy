@@ -11,6 +11,7 @@ export default function ListingGenerator() {
     step,
     progress,
     error,
+    warning,
     assets,
     stepLabel,
     downloadFormat,
@@ -65,29 +66,35 @@ export default function ListingGenerator() {
 
       {step === "done" && assets && (
         <div className="space-y-8">
-          <section>
-            <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
-              <div className="flex items-center gap-2">
-                <h2 className="font-semibold text-foreground">📦 Digital Download Files</h2>
-                <span className="text-xs bg-emerald-100 text-emerald-700 font-semibold px-2 py-0.5 rounded-full">
-                  ✨ Print-Ready 300 DPI
+          {warning && (
+            <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 text-sm text-amber-800">
+              ⚠️ {warning}
+            </div>
+          )}
+
+          {assets.pngBlob && (
+            <section>
+              <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <h2 className="font-semibold text-foreground">📦 Digital Download Files</h2>
+                  <span className="text-xs bg-emerald-100 text-emerald-700 font-semibold px-2 py-0.5 rounded-full">
+                    ✨ Print-Ready 300 DPI
+                  </span>
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  Include all 3 in your Etsy listing
                 </span>
               </div>
-              <span className="text-xs text-muted-foreground">
-                Include all 3 in your Etsy listing
-              </span>
-            </div>
-            <FormatDownloads onDownload={downloadFormat} />
-          </section>
+              <FormatDownloads onDownload={downloadFormat} />
+            </section>
+          )}
 
           <section>
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-semibold text-foreground">
                 🖼️ Listing Images ({allMockups.length})
               </h2>
-              <span className="text-xs text-muted-foreground">
-                Etsy recommends 10 images
-              </span>
+              <span className="text-xs text-muted-foreground">Etsy recommends 10 images</span>
             </div>
             <MockupGrid mockups={allMockups} onDownload={downloadMockup} />
           </section>
