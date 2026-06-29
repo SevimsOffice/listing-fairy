@@ -1,6 +1,9 @@
 import { useCallback, useState } from "react";
 import JSZip from "jszip";
-import { saveAs } from "file-saver";
+// file-saver is a CommonJS/UMD module; a named import breaks Vite SSR
+// ("Named export 'saveAs' not found"). Default-import + destructure instead.
+import fileSaver from "file-saver";
+const { saveAs } = fileSaver;
 import { MOCKUP_TEMPLATES, compositeMockup } from "@/lib/mockupCompositor";
 import { loadImageFromFile } from "@/lib/imageProcessor";
 import { enhanceAndExport } from "@/lib/imageEnhancer";
